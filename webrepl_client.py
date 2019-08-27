@@ -28,11 +28,14 @@ def help(rc=0):
     print("Examples:")
     print("  %s 192.168.4.1" % exename)
     print("  %s -p abcd 192.168.4.1" % exename)
-    print("  %s -p abcd -r 192.168.4.1 < <(sleep 1 && echo \"...\")" % exename)
+    print("  %s -p abcd -r 192.168.4.1 < <(sleep 1 && echo \"...\"\\x03\\x03\\x03)" % exename)
     print("Special command control sequences:")
     print("  line with single characters")
     print("    'A' .. 'E' - use when CTRL-A .. CTRL-E needed")
     print('  just "exit" - end shell')
+    print('')
+    print('A sequence of characters: \\x03\\x03\\x03, is necessary when streaming scripts.')
+    print('It must occur immediately after the last command. This is the information that the sending of the next commands is finished.')
     sys.exit(rc)
 
 inp = ""
@@ -155,6 +158,21 @@ def on_open(ws):
                 else:
                     try:
                         inp = do_input(prompt)
+                        # In the commands streamed to this script, this code activates the unconditional exit from the program.
+                        # This code solves the problem when the remote machine no longer responds, e.g. after a restart.
+                        # For example:
+                        #   import machine
+                        #   machine.reset()
+                        #
+                        # Communication will be suspended.
+                        #
+                        #   import machine
+                        #   machine.reset()\x03\x03\x03
+                        #
+                        # will close the connection.
+                        if '\x03\x03\x03' in inp:
+                            running = False
+                            inp = inp.replace('\x03\x03\x03', '')
                     except EOFError:
                         inp = 'exit'
                     if redirect:
