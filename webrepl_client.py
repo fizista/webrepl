@@ -145,9 +145,14 @@ def on_open(ws):
         running = True
         injected = False
         do_input = getpass.getpass
+        exit_code = False
 
         while running:
+            if exit_code:
+                break
             while ws.sock and ws.sock.connected:
+                if exit_code:
+                    break
                 while prompt and not(prompt_seen):
                     sleep(0.1)
                     if debug:
@@ -174,9 +179,10 @@ def on_open(ws):
                         #   machine.reset()\x03\x03\x03
                         #
                         # will close the connection.
-                        if '\x03\x03\x03' in inp:
+                        if '\x03\x03\x03' in inp or '\\x03\\x03\\x03' in inp:
                             running = False
-                            inp = inp.replace('\x03\x03\x03', '')
+                            exit_code = True
+                            inp = inp.replace('\x03\x03\x03', '').replace('\\x03\\x03\\x03', '')
                     except EOFError:
                         inp = 'exit'
                     if redirect:
