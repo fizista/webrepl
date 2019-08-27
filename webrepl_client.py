@@ -153,7 +153,10 @@ def on_open(ws):
                     sys.stdout.write("Password: ")
                     sys.stdout.flush()
                 else:
-                    inp = do_input(prompt)
+                    try:
+                        inp = do_input(prompt)
+                    except EOFError:
+                        inp = 'exit'
                     if redirect:
                         sys.stdout.write(inp+"\n")
                         sys.stdout.flush()
