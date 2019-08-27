@@ -49,6 +49,10 @@ debug = False
 redirect = False
 
 for i in range(len(sys.argv)):
+    if sys.argv[i] == '-h' or sys.argv[i] == '--help':
+        help(0)
+
+for i in range(len(sys.argv)):
     if sys.argv[i] == '-p':
         sys.argv.pop(i)
         passwd = sys.argv.pop(i)
